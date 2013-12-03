@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>PLEX</title>
+	
+	<script type="text/javascript" src="../system/script/jquery-2.0.3.min.js"></script>
+	<script type="text/javascript" src="../system/script/jquery.querystring.js"></script>	
+	<script type="text/javascript" src="../system/script/jquery.tooltipster.min.js"></script>
+	<script type="text/javascript" src="../system/script/jquery.lazyload.js"></script>	
+	<script type="text/javascript" src="../system/script/jquery.keynavigation.js"></script>					
+	<script type="text/javascript" src="../system/script/library.js"></script>
+	<link rel="stylesheet" type="text/css" href="../system/style/library.css">
+	<link rel="stylesheet" type="text/css" href="../system/style/glyphicons.css">	
+	<link rel="stylesheet" type="text/css" href="../system/style/tooltipster.css">	
+
+	<script type="text/javascript">
+		var library = new Library();
+		$(document).unload(library.showLoader("Loading ..."));
+						
+		$(document).ready(function() {
+			var device = document.getElementById("device");
+			$(".menuBar li a").tooltipster();
+			displayArtists();
+			$(document).arrowNavigation();			
+		});
+		
+		function displayArtists()
+		{
+			library.showLoader("Loading ...");
+			
+			library.getSectionOptions($.querystring().key, function(xml) {
+				$("#applicationBackground").css("background-image", "url(" + library.getServerUrl() + $(xml).find("MediaContainer:first").attr("art") + ")");
+
+				$(xml).find("Directory").each(function(index, item) {
+					var y = Math.floor(index/3);							
+					var x = index - (y*3);
+				
+					if (!$(this).attr("search")) {
+						html = "<li><a data-index=\"" + (x+2) + "_" + (y+1) + "\" class=\"option\" href=\"index.html?key=" + $.querystring().key + "&category=" + $(this).attr("key") + "\">";
+						html += "<div class=\"title\">" + $(this).attr("title") + "</div>";
+						html += "</a></li>";
+						$("#sectionFilter ul").append(html);
+					}
+				});
+			
+				if ($.querystring().key2) {
+					library.getSectionCategoryMediaItems($.querystring().key, $.querystring().category, $.querystring().key2, function(xml) {	
+						$("#title").text($(xml).find("MediaContainer:first").attr("title1") + ": " + $(xml).find("MediaContainer:first").attr("title2"));
+						$(xml).find("Directory, Track").each(function(index, item) {	
+							var key2 = ($.querystring().category == "folder") ? $(this).attr("key").substr($(this).attr("key").indexOf("=")+1) : $(this).attr("key");
+							
+							if ($(this).attr("type") == "album") {
+								var y = Math.floor(index/7);							
+								var x = index - (y*7);
+
+								html = "<a data-index=\"" +  x + "_" + (y+1) + "\" class=\"itemLink musicLink\" href=\"item.html?key=" + $(this).attr("ratingKey") + "&parentKey=" + $.querystring().key + "\">";
+								html += "<div class=\"item\">";
+								html += "<div class=\"poster\"><img data-original=\"" + library.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(library.getServerUrl() + $(this).attr("thumb")) + "&width=128&height=200\"></div>";
+								html += "<div class=\"title\">" + $(this).attr("title") + "</div>";
+								html += "</div>";
+								html += "</a>";
+							} else if ($(this).attr("type") == "track") {
+								html = "<a data-index=\"0_" + (index+1) + "\" class=\"trackLink\" href=\"" + library.getServerUrl() + $(this).find("Part:first").attr("key") + "\">";
+								if ($(this).attr("title").length > 0) {
+									html += "<div class=\"title\">" + $(this).attr("title") + "</div>";
+								} else {
+									html += "<div class=\"title\">Unknown</div>";
+								}
+								html += "</a>";								
+							} else {
+								var y = Math.floor(index/3);							
+								var x = index - (y*3);
+
+								html = "<a data-index=\"" + x + "_" + (y+1) + "\" class=\"category\" href=\"index.html?key=" + $.querystring().key + "&category=" + $.querystring().category + "&key2=" + key2 + "\">";
+								if ($(this).attr("title").length > 0) {
+									html += "<div class=\"title\">11 " + $(this).attr("title") + "</div>";
+								} else {
+									html += "<div class=\"title\">Unknown</div>";
+								}
+								html += "</a>";								
+							}
+							
+							$("#media").append(html);
+						});
+					
+
+						$(".poster img").lazyload({
+						     container: $("#media")
+						});
+						
+						library.hideLoader();	
+						$(".itemLink:first").focus();
+					});				
+			
+				} else if ($.querystring().category && ($.querystring().category != "all")) {			
+					library.getSectionCategoryItems($.querystring().key, $.querystring().category, function(xml) {	
+						$("#title").text($(xml).find("MediaContainer:first").attr("title1") + ": " + $(xml).find("MediaContainer:first").attr("title2"));						
+						$(xml).find("Directory").each(function(index, item) {
+							var key2 = ($.querystring().category == "folder") ? $(this).attr("key").substr($(this).attr("key").indexOf("=")+1) : $(this).attr("key");
+							
+							if ($(this).attr("type") == "album") {
+								var y = Math.floor(index/7);							
+								var x = index - (y*7);
+
+								html = "<a data-index=\"" + x + "_" + (y+1) + "\" class=\"itemLink musicLink\" href=\"item.html?key=" + $(this).attr("ratingKey") + "&parentKey=" + $.querystring().key + "\">";
+								html += "<div class=\"item\">";
+								html += "<div class=\"poster\"><img data-original=\"" + library.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(library.getServerUrl() + $(this).attr("thumb")) + "&width=128&height=200\"></div>";
+								html += "<div class=\"title\">" + $(this).attr("title") + "</div>";
+								html += "</div>";
+								html += "</a>";
+							} else {
+								var y = Math.floor(index/3);							
+								var x = index - (y*3);
+
+								html = "<a data-index=\"" + x + "_" + (y+1) + "\" class=\"category\" href=\"index.html?key=" + $.querystring().key + "&category=" + $.querystring().category + "&key2=" + key2 + "\">";
+								if ($(this).attr("title").length > 0) {
+									html += "<div class=\"title\">" + $(this).attr("title") + "</div>";
+								} else {
+									html += "<div class=\"title\">Unknown</div>";
+								}
+								html += "</a>";								
+							}
+							
+							$("#media").append(html);
+						});
+					
+						$(".poster img").lazyload({
+								placeholder: '../system/images/album.png', 
+								container: $("#media")
+						});
+						
+						library.hideLoader();	
+						$(".itemLink:first,.category:first").focus();
+					});	
+					
+				} else {
+					library.getAllSectionMediaItems($.querystring().key, function(xml) {	
+						$("#title").text($(xml).find("MediaContainer:first").attr("title2"));
+						$(xml).find("Directory").each(function(index, item) {
+							var y = Math.floor(index/7);							
+							var x = index - (y*7);
+
+							html = "<a data-index=\"" + x + "_" + (y+1) + "\" class=\"itemLink musicLink\" href=\"item.html?key=" + $(this).attr("ratingKey") + "&parentKey=" + $.querystring().key + "\">";
+							html += "<div class=\"item\">";
+							html += "<div class=\"poster\"><img data-original=\"" + library.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(library.getServerUrl() + $(this).attr("thumb")) + "&width=128&height=200\"></div>";
+							html += "<div class=\"title\">" + $(this).attr("title") + "</div>";
+							html += "</div>";
+							html += "</a>";
+							$("#media").append(html);
+						});
+					
+						$(".poster img").lazyload({
+								placeholder: '../system/images/album.png', 
+								container: $("#media")
+						});
+						
+						library.hideLoader();	
+						$(".itemLink:first").focus();
+					});	
+				}				
+			});		
+		}
+	</script>
+</head>
+<body>
+	<div id="applicationBackground"></div>
+	
+	<div id="application">
+		<div class="menuBarStrip"></div>
+		<div class="menuBar">
+			<ul>
+				<li><a data-index="0_0" href="javascript:history.go(-1);" title="Back"><i class="glyphicon left-arrow"></i></a></li>					
+				<li><a data-index="1_0" href="../index.html" title="Home"><i class="glyphicon home"></i></a></li>
+				<li><a data-index="2_0" href="javascript:library.toggleFilter();" title="Filter"><i class="glyphicon sort-by-attributes"></i></a>
+					<div id="sectionFilter" class="menuBarDropDown" style="display: none;"><ul></ul></div>
+				</li>
+				<li class="divider"></li>									
+				<li><span class="menuLabel" id="title"></span></li>	
+			</ul>	
+		</div>
+		<div id="mediaStrip"></div>
+		<div id="media"></div>
+		<div id="libraryIcon"><i class="glyphicon albums"></i></div>
+	</div>
+	
+	<div id="loader" style="display: none;">
+		<img src="../system/images/loader.gif" alt="Loading">
+		<div id="message"></div>
+	</div>
+	
+	<object type="application/x-netcast-info" id="device" width="0" height="0"></object>	
+</body>
+</html>

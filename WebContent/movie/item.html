@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>PLEX</title>
+	
+	<script type="text/javascript" src="../system/script/jquery-2.0.3.min.js"></script>
+	<script type="text/javascript" src="../system/script/jquery.querystring.js"></script>	
+	<script type="text/javascript" src="../system/script/jquery.tooltipster.min.js"></script>
+	<script type="text/javascript" src="../system/script/jquery.lazyload.js"></script>	
+	<script type="text/javascript" src="../system/script/jquery.keynavigation.js"></script>					
+	<script type="text/javascript" src="../system/script/library.js"></script>
+	<link rel="stylesheet" type="text/css" href="../system/style/library.css">
+	<link rel="stylesheet" type="text/css" href="../system/style/glyphicons.css">	
+	<link rel="stylesheet" type="text/css" href="../system/style/tooltipster.css">	
+
+	<script type="text/javascript">
+		var library = new Library();
+		$(document).unload(library.showLoader("Loading ..."));
+						
+		$(document).ready(function() {
+			var device = document.getElementById("device");
+			$(".menuBar li a").tooltipster();
+			displayMovies();
+			$(document).arrowNavigation();
+		});
+		
+		function displayMovies()
+		{
+			library.showLoader("Loading ...");
+			
+			library.getSectionOptions($.querystring().parentKey, function(xml) {
+				$("#applicationBackground").css("background-image", "url(" + library.getServerUrl() + $(xml).find("MediaContainer:first").attr("art") + ")");
+
+				$(xml).find("Directory").each(function(index, item) {
+					var y = Math.floor(index/3);							
+					var x = index - (y*3);
+
+					if (!$(this).attr("search")) {
+						html = "<li><a data-index=\"" + (x+2) + "_" + (y+1) + "\" class=\"option\" href=\"index.html?key=" + $.querystring().parentKey + "&category=" + $(this).attr("key") + "\">";
+						html += "<div class=\"title\">" + $(this).attr("title") + "</div>";
+						html += "</a></li>";
+						$("#sectionFilter ul").append(html);
+					}
+				});
+				
+				library.getMediaItem($.querystring().key, function(xml) {		
+					var $item = $(xml).find("Video:first");
+					$("#title").text($item.attr("title"));
+					$("#applicationBackground").css("background-image", "url(" + library.getServerUrl() + $item.attr("art") + ")");
+					
+					html = "<table class=\"_details\">";
+					html += "<tr>";
+					html += "<td class=\"_poster\">";
+					html += "<img src=\"" + library.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(library.getServerUrl() + $item.attr("thumb")) + "&width=256&height=420\"/>";
+					html += "<a data-index=\"0_1\" class=\"playItem movie\" href=\"" + library.getServerUrl() + $($item).find("Part:first").attr("key") + "\"><i class=\"glyphicon play\"></i>Play</a>";
+					html += "</td>";
+					html += "<td class=\"_info\">";	
+					
+					if ($item.attr("title")) {									
+						html += "<div class=\"_title\">" + $item.attr("title") + "</div>";
+					}
+					
+					if ($item.attr("tagline")) {
+						html += "<div class=\"_tag\">" + $item.attr("tagline") + "</div>";
+					}
+					
+					if ($($item).find("Genre:first").attr("tag")) {
+						html += "<div class=\"_genre\">" + $($item).find("Genre:first").attr("tag") + "&nbsp;&nbsp;&nbsp;(" + $item.attr("year") + ")</div>";
+					}
+					
+					if ($item.attr("summary")) {
+						html += "<div class=\"_summary\">" + $item.attr("summary") + "</div>";
+					}
+					
+					if ($item.attr("summary")) {
+						html += "<div class=\"_rating\"><img src=\"" + library.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(library.getServerUrl() + "/system/bundle/media/flags/contentRating/" + $item.attr("contentRating") + "?t=1234") + "&width=70&height=25" + "\"/></div>";
+					}
+					
+					if ($($item).find("Director:first").attr("tag") > 0) {
+						html += "<div class=\"_director\"><span class=\"_label\">Director</span>" + $($item).find("Director:first").attr("tag") + "</div>";
+					}
+					
+					if ($($item).find("Role").length > 0) {					
+						var attrs = $.map($($item).find("Role"), function(element) {
+							return $(element).attr('tag');
+						});								
+						html += "<div class=\"_cast\"><span class=\"_label\">Cast</span>" + attrs.join(", ") + "</div>";
+					}
+					
+					if ($item.attr("studio")) {
+						html += "<div class=\"_studio\"><img src=\"" + library.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(library.getServerUrl() + "/system/bundle/media/flags/studio/" + $item.attr("studio") + "?t=1234") + "&width=200&height=40" + "\"/></div>";
+					}			
+					html += "</td>";
+					html += "</tr>";
+					html += "</table>";
+					
+					$("#media").append(html);
+				
+					library.hideLoader();	
+					$("a.playItem:first").focus();
+				});	
+			});		
+		}
+	</script>
+</head>
+<body>
+	<div id="applicationBackground"></div>
+	
+	<div id="application">
+		<div class="menuBarStrip"></div>
+		<div class="menuBar">
+			<ul>
+				<li><a data-index="0_0" href="javascript:history.go(-1);" title="Back"><i class="glyphicon left-arrow"></i></a></li>					
+				<li><a data-index="1_0" href="../index.html" title="Home"><i class="glyphicon home"></i></a></li>
+				<li><a data-index="2_0" href="javascript:library.toggleFilter();" title="Filter"><i class="glyphicon sort-by-attributes"></i></a>
+					<div id="sectionFilter" class="menuBarDropDown" style="display: none;"><ul></ul></div>
+				</li>
+				<li class="divider"></li>									
+				<li><span class="menuLabel" id="title"></span></li>	
+			</ul>	
+		</div>
+		<div id="mediaStrip"></div>
+		<div id="media"></div>
+		<div id="libraryIcon"><i class="glyphicon film"></i></div>
+	</div>
+	
+	<div id="loader" style="display: none;">
+		<img src="../system/images/loader.gif" alt="Loading">
+		<div id="message"></div>
+	</div>
+	
+	<object type="application/x-netcast-info" id="device" width="0" height="0"></object>	
+</body>
+</html>

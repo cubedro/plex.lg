@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>PLEX</title>
+	
+	<script type="text/javascript" src="../system/script/jquery-2.0.3.min.js"></script>
+	<script type="text/javascript" src="../system/script/jquery.querystring.js"></script>	
+	<script type="text/javascript" src="../system/script/jquery.tooltipster.min.js"></script>
+	<script type="text/javascript" src="../system/script/jquery.lazyload.js"></script>	
+	<script type="text/javascript" src="../system/script/jquery.keynavigation.js"></script>					
+	<script type="text/javascript" src="../system/script/library.js"></script>
+	<link rel="stylesheet" type="text/css" href="../system/style/library.css">
+	<link rel="stylesheet" type="text/css" href="../system/style/glyphicons.css">	
+	<link rel="stylesheet" type="text/css" href="../system/style/tooltipster.css">	
+
+	<script type="text/javascript">
+		var library = new Library();
+		$(document).unload(library.showLoader("Loading ..."));
+						
+		$(document).ready(function() {
+			var device = document.getElementById("device");
+			$(document).arrowNavigation();	
+			
+			library.showLoader("Loading ...");
+			library.getMediaItem($.querystring().key, function(xml) {
+				$("#application").append("<img src=\"" + library.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(library.getServerUrl() + $(xml).find("Part:first").attr("key")) + "&width=1260&height=700\"/>");
+				library.hideLoader();
+			});
+		});
+		
+
+	</script>
+</head>
+<body>
+	<div id="applicationBackground"></div>
+	
+	<div id="application" class="picture">
+		
+	</div>
+	
+	<div id="loader" style="display: none;">
+		<img src="../system/images/loader.gif" alt="Loading">
+		<div id="message"></div>
+	</div>
+	
+	<object type="application/x-netcast-info" id="device" width="0" height="0"></object>	
+</body>
+</html>
