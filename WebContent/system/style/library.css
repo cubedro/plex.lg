@@ -1,4 +1,15 @@
-﻿body {
+﻿/*
+ * PLEX for LG Styles
+ *
+ * Copyright (c) 2013 Simon J. Hogan
+ * 
+ * Modified: 2013/12/2
+ *
+ * Version:  0.1
+ *
+ */
+ 
+body {
 	background: #111 url("../images/background.png") repeat fixed center;
 	margin: 0px;	
 	font-size: 22px;	
@@ -151,6 +162,18 @@
 	color: #fff;
 	margin-left: 10px;
 	margin-right: 5px;	
+}
+
+#server a * {
+	outline: none;
+}
+
+#server a:hover * {
+	color: #fc3;
+}
+
+#server a:focus * {
+	color: #fc3;
 }
 
 #sectionsStrip {
